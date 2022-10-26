@@ -5,7 +5,7 @@ from itertools import count
 
 def main():
     global file
-    ch = int(input('Телефонный справочник\n1)Импортировать номера\n2)Эксортировать номера\n'))
+    ch = int(input('Телефонный справочник\n1)Импортировать номера\n2)Эксортировать номера\n\n0)Выход\n'))
     if ch == 1:
         file = input('Введите название файла для импорта(например test.csv): ')
         if file[-4:] != ".csv":
@@ -39,6 +39,8 @@ def main():
         match (exp_ch):
             case '1':
                 FindOneLine()
+            case '2':
+                FindAllLines()
             case "3":
                 file = input('Введите название файла для экспорта(например test.csv): ')
                 if file[-4:] != ".csv":
@@ -136,5 +138,33 @@ def FindOneLine():
         print('\nФайл не найден\n')
         return main()
 
+def FindAllLines():
+    count = 0
+    file = input('Введите название файла-справочника: ')
+    if file[-4:] != ".csv":
+        print('\nФайл должен иметь расширение .csv\n')
+        return FindOneLine()
+    try:
+        with open(file, 'r', encoding='utf-8') as exp:
+            ch = input('''По какому критерию осуществляется поиск?
+1)Фамилия
+2)Имя
+3)Отчество
+4)Телефон
 
+0)Назад\n''')
+            if ch == 0: return main
+            find = input("Введите данные для поиска: ")
+            for i in exp.readlines():
+                i = i.replace('\n','')
+                if i.split(';')[int(ch)-1].lower() == find.lower():
+                    print(i.split(';'))
+                    count += 1
+            print('')
+            if count == 0:
+                print('\nПо вашему запросу ничего не найдено, попробуйте снова\n')
+                return main()
+    except:
+        print('\nФайл не найден\n')
+    return main()
 main()
