@@ -11,6 +11,10 @@ def main():
 2) Добавить несколько номеров вручную
 3) Добавить несколько номеров из файла
 '''))
+        match (imp_ch) :
+            case 1:
+                EnterOneNum()
+        
     elif ch == 2:
         file = input('Введите название файла для экспорта : ')
         with open(file, 'a', encoding='utf8') as imp: 
@@ -21,7 +25,6 @@ def main():
 
 def EnterOneNum():
      with open(file, 'a', encoding='utf8') as imp:
-        res = []
         fam = input("Введите Фамилию: ")
         if len(fam) < 2:
             print("Фамилия слишком короткая, минимум 2 символа.")
@@ -33,7 +36,7 @@ def EnterOneNum():
             main()
             exit()
         otch = input('Введите отчество (при наличии): ')
-        if len(otch) < 5 or len(otch)!=0:
+        if len(otch)>0 and len(otch)<5:
             print("Отчество слишком короткое, минимум 5 символов.")
             main()
             exit()
@@ -45,6 +48,7 @@ def EnterOneNum():
             print("Заметка должна содержать не более 20 символов")
             main()
             exit()
-        res.append(fam,imya,otch,num,note)
+        res = [fam,imya,otch,num,note]
         imp.write(f"{';'.join(res)}\n")
-
+        print(f"Номер успешно импортирован файл {file}")
+        main()
