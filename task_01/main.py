@@ -52,3 +52,12 @@ def EnterOneNum():
         imp.write(f"{';'.join(res)}\n")
         print(f"Номер успешно импортирован файл {file}")
         main()
+def EnterSomeNumbers():
+    count = input("Введите количество импортируемых номеров: ")
+    if count.isdigit() and int(count)>0:
+        for i in range(1, count + 1):
+            print(f"======= Импорт номера №{i} =======")
+            EnterOneNum()
+    else:
+        print("Введено некорректное значение.")
+    main()
