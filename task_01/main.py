@@ -1,5 +1,8 @@
 # Создать телефонный справочник с возможностью импорта и экспорта данных в формате CSV.
 
+from itertools import count
+
+
 def main():
     global file
     ch = int(input('Телефонный справочник\n1)Импортировать номера\n2)Эксортировать номера\n'))
@@ -7,57 +10,71 @@ def main():
         file = input('Введите название файла для импорта(например test.csv): ')
         if file[-4:] != ".csv":
             print('\nФайл должен иметь расширение .csv\n')
-            main()
-        imp_ch = int(input('''\nТелефонный справочник
+            return main()
+        imp_ch = input('''\nТелефонный справочник
 1) Добавить номер
 2) Добавить несколько номеров вручную
 3) Добавить несколько номеров из файла
-'''))
+
+0) Закрыть Программу
+''')
         match (imp_ch) :
-            case 1:
-                EnterOneNum()
-            case 2:
-                EnterSomeNumbers()
-            case 3:
-                EnterFromFile()
-            case _:
+            case "1":
+                return EnterOneNum()
+            case '2':
+                return EnterSomeNumbers()
+            case '3':
+                return EnterFromFile()
+            case '0':
                 exit()
+            case _:
+                print('\nВведено некорректное значение\n')
+                return main()
         
-    elif ch == 2:
-        file = input('Введите название файла для экспорта : ')
-        with open(file, 'a', encoding='utf-8') as exp: 
-            exp_ch = int(input('''Телефонный справочник
+    elif ch == 2: 
+        exp_ch = input('''Телефонный справочник
 1) Вывести информацию о телефоне на экран
 2) Вывести информацию о нескольких номерах на экран
-3) Вывести информацию о нескольких номерах в файл'''))
+3) Вывести информацию о нескольких номерах в файл\n''')
+        match (exp_ch):
+            case '1':
+                FindOneLine()
+            case "3":
+                file = input('Введите название файла для экспорта(например test.csv): ')
+                if file[-4:] != ".csv":
+                    print('\nФайл должен иметь расширение .csv\n')
+                    return main()
+
 
 def EnterOneNum(flag = True):
      with open(file, 'a', encoding='utf-8') as imp:
         fam = input("Введите Фамилию: ")
         if len(fam) < 2:
             print("\nФамилия слишком короткая, минимум 2 символа.\n")
-            return main()
+            return EnterOneNum() if flag == True else EnterSomeNumbers()
         imya = input('Введите имя: ')
         if len(imya) < 2:
             print("\nИмя слишком короткое, минимум 2 символа.\n")
-            return main()
+            return EnterOneNum() if flag == True else EnterSomeNumbers()
         otch = input('Введите отчество (при наличии): ')
         if len(otch)>0 and len(otch)<5:
             print("\nОтчество слишком короткое, минимум 5 символов.\n")
-            return main()
+            return EnterOneNum() if flag == True else EnterSomeNumbers()
         num = input("Введите номер без +: ")
         if not num.isdigit():
             print("\nНомер должен состоять только из цифр\n")
+            return EnterOneNum() if flag == True else EnterSomeNumbers()
         note = input("Введите заметку(не более 20 символов): ")
         if len(note) > 20:
             print("\nЗаметка должна содержать не более 20 символов\n")
-            return main()
+            return EnterOneNum() if flag == True else EnterSomeNumbers()
         res = [fam,imya,otch,num,note]
         imp.write(f"{';'.join(res)}\n")
         print(f"\nНомер успешно импортирован файл {file}\n")
         imp.close()
         if flag:
             return main()
+
 def EnterSomeNumbers():
     count = input("Введите количество импортируемых номеров: ")
     if count.isdigit() and int(count)>0:
@@ -66,14 +83,15 @@ def EnterSomeNumbers():
             EnterOneNum(0)
     else:
         print("\nВведено некорректное значение.\n")
+        return EnterSomeNumbers()
     return main()
+
 def EnterFromFile():
     with open(file, 'a', encoding='utf-8') as to_imp:
         f = input('Введите название файла откуда импортировать контакты: ')
         if f[-4:] != ".csv":
             print('\nФайл должен иметь расширение .csv\n')
-            EnterFromFile()
-            return main()
+            return EnterFromFile()
         try:
             with open(f,"r", encoding="utf-8") as from_imp:
                 for i in from_imp:
@@ -84,4 +102,39 @@ def EnterFromFile():
             print('\nДанного файла не существует.\n')
         to_imp.close()
         return main()
+
+def FindOneLine():
+    res = ''
+    count = 0
+    file = input('Введите название файла-справочника: ')
+    if file[-4:] != ".csv":
+        print('\nФайл должен иметь расширение .csv\n')
+        return FindOneLine()
+    try:
+        with open(file, 'r', encoding='utf-8') as exp:
+            ch = input('''По какому критерию осуществляется поиск?
+1)Фамилия
+2)Имя
+3)Отчество
+4)Телефон
+
+0)Назад\n''')
+            if ch == 0: return main
+            find = input("Введите данные для поиска: ")
+            for i in exp.readlines():
+                if i.split(';')[int(ch)-1].lower() == find.lower():
+                    count += 1
+                    res = i.split(';')
+            if count == 1:
+                print(res)
+            elif count==0:
+                print('\nПо вашему запросу ничего не найдено, попробуйте снова\n')
+            elif count>1:
+                print('По вашему запросу найдено более 1го номера, попробуйте поиск по дугому критерию ')
+            return main()
+    except:
+        print('\nФайл не найден\n')
+        return main()
+
+
 main()
