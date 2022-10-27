@@ -1,7 +1,5 @@
 # Создать телефонный справочник с возможностью импорта и экспорта данных в формате CSV.
-
-from itertools import count
-
+import os
 
 def main():
     global file
@@ -36,16 +34,20 @@ def main():
 1) Вывести информацию о телефоне на экран
 2) Вывести информацию о нескольких номерах на экран
 3) Вывести информацию о нескольких номерах в файл\n''')
+        file = input('Введите название файла-справочника: ')
+        if file[-4:] != ".csv":
+            print('\nФайл должен иметь расширение .csv\n')
+            return main()
         match (exp_ch):
             case '1':
                 FindOneLine()
             case '2':
                 FindAllLines()
             case "3":
-                file = input('Введите название файла для экспорта(например test.csv): ')
-                if file[-4:] != ".csv":
-                    print('\nФайл должен иметь расширение .csv\n')
-                    return main()
+                FindToFile()
+            case _:
+                print('\nВведено некорректное значение\n')
+                return main()    
 
 
 def EnterOneNum(flag = True):
@@ -108,10 +110,6 @@ def EnterFromFile():
 def FindOneLine():
     res = ''
     count = 0
-    file = input('Введите название файла-справочника: ')
-    if file[-4:] != ".csv":
-        print('\nФайл должен иметь расширение .csv\n')
-        return FindOneLine()
     try:
         with open(file, 'r', encoding='utf-8') as exp:
             ch = input('''По какому критерию осуществляется поиск?
@@ -138,12 +136,10 @@ def FindOneLine():
         print('\nФайл не найден\n')
         return main()
 
-def FindAllLines():
+def FindAllLines(flag = True):
+    global fal 
+    fal = []
     count = 0
-    file = input('Введите название файла-справочника: ')
-    if file[-4:] != ".csv":
-        print('\nФайл должен иметь расширение .csv\n')
-        return FindOneLine()
     try:
         with open(file, 'r', encoding='utf-8') as exp:
             ch = input('''По какому критерию осуществляется поиск?
@@ -160,11 +156,58 @@ def FindAllLines():
                 if i.split(';')[int(ch)-1].lower() == find.lower():
                     print(i.split(';'))
                     count += 1
+                    fal.append(i.split(';'))
             print('')
             if count == 0:
                 print('\nПо вашему запросу ничего не найдено, попробуйте снова\n')
                 return main()
     except:
         print('\nФайл не найден\n')
+    if flag == True: return main()
+
+def FindToFile():
+    exfile = input('Введите название файла куда экспортировать данные(например test.csv): ')
+    if exfile[-4:] != ".csv":
+        print('\nФайл должен иметь расширение .csv\n')
+        return main()
+    with open(exfile, 'a', encoding='utf-8')as to_exp:
+        if os.path.isfile(file):
+            with open(file, 'r', encoding='utf-8') as from_exp:
+                lines = from_exp.readlines()
+                print(f'\nВ файле {len(lines)} контактов\n')
+                ch = input('Выберите каким способом выбираем номера для экспорта?\n1)Поиск по критерию\n2)Диапозон номеров строк\n3)Весь файл\n\n0)Назад в меню\n')
+                if ch == '1':
+                    FindAllLines(False)
+                    for k in fal:
+                        to_exp.write(f'{";".join(k)}\n')
+                    print(f'{len(fal)} контактов импортировано в файл {exfile}\n')
+                elif ch == '2':
+                    count = 0
+                    start = input('Введите с какой строки начать выгрузку: ')
+                    if not start.isdigit() or int(start) <= 0 or int(start) > len(lines) :
+                        print('Введено некорректное значение, попробуйте снова.')
+                        return FindToFile()
+                    end = input('Введите на какой строке закончить выгрузку (включительно): ')
+                    if not end.isdigit() or int(end) > len(lines) or int(end) < int(start):
+                        print('Введено некорректное значение, попробуйте снова.')
+                        return FindToFile()
+                    for j in lines:
+                        count += 1
+                        if count>=int(start) and count <= int(end):
+                            to_exp.write(f'{j}')
+                    print(f'\nНомера успешно экспортированы в файл {exfile}\n')
+                elif ch == '3':
+                    for i in lines:
+                        to_exp.write(i)
+                    print(f'\nНомера успешно экспортированы в файл {exfile}\n')
+                elif ch == '0':
+                    return main()
+                else:
+                    print('\nВведено некорректное значение, попробуйте заново.\n')
+                    return FindToFile()
+            from_exp.close()
+        else:
+            print('\nФайл не найден\n')
+    to_exp.close()
     return main()
 main()
